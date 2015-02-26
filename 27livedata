@@ -1,0 +1,81 @@
+#!/bin/sh
+
+PREREQ=''
+DESCRIPTION='Applying live data extensions...'
+
+case $1 in
+# get pre-requisites
+prereqs)
+  echo "$PREREQ"
+  exit 0
+  ;;
+esac
+
+. /scripts/casper-functions
+log_begin_msg "$DESCRIPTION"
+
+# default values
+live_path='/.sys'
+data_path=''
+data_ext='tgz txz tbz tar.xz tar.gz tar.bz2'
+
+# determine live/data path
+for arg in `cat /proc/cmdline`; do \
+  case "$arg" in
+    live-media-path=*)     live_path=${arg#live-media-path=};;
+    live-data-path=*)      data_path=${arg#live-data-path=};;
+    live-data-extensions=*) data_ext=${arg#live-data-extensions=};;
+  esac
+done
+
+# find and unpack live data files
+livedata_unpack_archive () {
+  local base="${1}"
+  shift
+  local dest="${1}"
+  shift
+  
+  for ext in "${@}"; do \
+    [ -r "/root/${base}.${ext}" ] && chroot /root tar -x -C "${dest}"  -f "${base}.${ext}"
+  done
+}
+
+# unpack live data
+livedata_unpack () {
+  local sys_arch=`uname -m`
+  
+  # unpack system data
+  for base in "/cdrom/${1}/root" "/cdrom/${1}/root_${sys_arch}"; do
+    livedata_unpack_archive "${base}" '/' ${data_ext}
+  done
+  # live user settings
+  for base in "/cdrom/${1}/home" "/cdrom/${1}/home_${sys_arch}"; do
+    livedata_unpack_archive "${base}" "/home/${USERNAME}" ${data_ext}
+  done
+  # opt directory
+  for base in "/cdrom/${1}/opt" "/cdrom/${1}/opt_${sys_arch}"; do
+    livedata_unpack_archive "${base}" '/opt' ${data_ext}
+  done
+}
+
+# unpack live system data
+[ -n "${live_path}" ] \
+  && livedata_unpack "${live_path}"
+
+# unpack additional live data
+[ -n "${data_path}" -a "x${data_path}" != "x${live_path}" ] \
+  && livedata_unpack "${data_path}"
+
+# add Live-User to FUSE group
+chroot /root /usr/sbin/usermod -a -Gfuse "${USERNAME}"
+# create ssh directory
+mkdir -p /root/remote
+# set home and remote directory ownership
+chroot /root chown -R "${USERNAME}:${USERNAME}" "/home/${USERNAME}" /remote
+
+# clean environment
+unset live_path
+unset data_path
+unset data_ext
+
+log_end_msg

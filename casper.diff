@@ -1,0 +1,9 @@
+573c573,578
+<         mount -t ${fstype} -o ro,noatime "${devname}" $mountpoint || continue
+---
+> ### live-tools divert
+> #       mount -t ${fstype} -o ro,noatime "${devname}" $mountpoint || continue
+>         devopts="rw,noatime,fmask=0,dmask=0"
+>         [ "${fstype}" = "ntfs" -o "${fstype}" = "vfat" ] || devopts=ro,noatime
+>         mount -t ${fstype} -o "${devopts}" "${devname}" $mountpoint || continue
+> ### end
