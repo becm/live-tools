@@ -8,15 +8,23 @@ and create bootable USB media.
 
 Call script without arguments to show available entrypoint options.
 
-### Image Creation `create`
-Cleanup functions are trimmed for Debian/Ubuntu type systems.
+### Image Creation
+The `create` operation takes a system root directory and an
+arbitrary output directory to write a squashfs image (`filesystem.squashfs`),
+additional package and copy current kernel (`vmlinu*`) and initrd (`initrd.*`) to.
+
+The `/boot` directory is exclude from squashfs image to save space.
+
+Cleanup functions are designed for Debian/Ubuntu type systems.
 
 Required packages:
 - `squashfs-tools`: creating compressed image file
 - `dpkg`: installed packages listing
 
-### Live USB Creation `install`
-Copying image data to stick and writing prepared GRUB2 boot code.
+### Live USB Creation
+Use `install` operation to copy live data to stick and writing prepared GRUB2 boot code.
+
+Try to hide live system directory via FAT file system flags.
 
 
 ## GRUB configuration
@@ -29,6 +37,8 @@ A minimal module set (working on my system!) for `grub2` is listed in `grub_mini
 ## Casper Configuration
 To add data to Live System Ramdisk the script `27livedata` searches
 for archives and extracts them to a location according to their name.
+This script should be copied to `/usr/share/initramfs-tools/scripts/casper-bottom`
+of live system base.
 
 When using a regular data Stick to store a live system it is useful
 to wave write access to the single live media partition.

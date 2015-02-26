@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # mklive.sh: update/create live media
 
 [ `id -u` -ne 0 ] && asroot="sudo"
@@ -8,23 +8,30 @@ error () {
     printf "${@} \n" 1>&2
 }
 
+# mount first partition of image file
+mklive_mount () {
+    mount -o offset=1048576 "${1}" "${2}"
+}
+
 # exclude packages in desktop install
-function mklive_filter_packages {
+mklive_filter_packages () {
     grep -e{casper,cryptsetup,debian-installer,discover,dmraid,icu,rdate,reiser,ubiquity,user-setup} -v "${1}"
 }
 
 # update root filesystem
-function mklive_mklive_update {
+mklive_update () {
     ${asroot} cp -aL /etc/resolv.conf "${1}/etc/resolv.conf"
-    ${asroot} chroot "${1}" << EOF > /dev/null || return $?
+    ${asroot} mount -t devpts devpts "${1}/dev/pts"
+    ${asroot} chroot "${1}" << EOF || return $?
 aptitude update
 aptitude -y safe-upgrade
 aptitude clean
 EOF
+    ${asroot} umount "${1}/dev/pts"
 }
 
 # remove apt cache
-function mklive_clean_apt {
+mklive_clean_apt () {
     ${asroot} rm -f \
 "${1}"/var/cache/apt/pkgcache.bin \
 "${1}"/var/cache/apt/srcpkgcache.bin \
@@ -34,7 +41,7 @@ function mklive_clean_apt {
 "${1}"/var/lib/apt/lists/partial/*
 }
 # remove history
-function mklive_clean_hist {
+mklive_clean_hist () {
     ${asroot} rm -f \
 "${1}"/var/cache/debconf/*.dat-old \
 "${1}"/var/lib/dpkg/*-old \
@@ -44,7 +51,7 @@ function mklive_clean_hist {
 }
 
 # create live files
-function mklive_create {
+mklive_create () {
     local root=${1}
     local dest=${2}
     [ -z "${root}" ] && error "missing chroot directory" && return 1
@@ -65,8 +72,23 @@ function mklive_create {
     ${asroot} chmod 644 "${dest}/filesystem.squashfs"
 }
 
+# create single partition
+mklive_part () {
+    ${asroot} fdisk ${1} > /dev/null << EOF
+o
+n
+p
+1
+
+
+t
+c
+w
+EOF
+}
+
 # set FAT file attributes
-function mklive_mattrib {
+mklive_mattrib () {
     local chattr=`which mattrib`
     [ -n "$chattr" -a -n "${1}" ] || return 1
     local mfile="`mktemp mattrib_XXXXXX`"
@@ -81,7 +103,7 @@ EOF
 }
 
 # set FAT file attributes
-function mklive_mlabel {
+mklive_mlabel () {
     local label=`which mlabel`
     [ -n "$label" -a -n "${1}" -a -n "${2}" ] || return 1
     local mfile=/tmp/mtoolsrc.$$
@@ -94,23 +116,8 @@ EOF
     return $ret
 }
 
-# create single partition
-function mklive_part {
-    ${asroot} fdisk ${1} > /dev/null << EOF
-o
-n
-p
-1
-
-
-t
-c
-w
-EOF
-}
-
 # install grub on device
-function mklive_grub {
+mklive_grub () {
     [ -z "${1}" ] && error "missing system directory" && return 1
     [ -z "${2}" ] && error "missing target device" && return 1
     ${asroot} dd "if=${2}/grub/boot.img" "of=${1}" bs=446 count=1 && \
@@ -118,7 +125,7 @@ function mklive_grub {
 }
 
 # copy live files
-function mklive_copy {
+mklive_copy () {
     [ $# -lt 2 ] && return 2
 # make target directory
     mkdir -p "${2}" || return $?
@@ -129,7 +136,7 @@ function mklive_copy {
 }
 
 # live media creation
-function mklive_install {
+mklive_install () {
 # default settings
     local source="/home/live"
     local mpoint="/mnt"
@@ -153,23 +160,25 @@ function mklive_install {
     printf '%s\n' 'finished'
 }
 
-function  mklive_usage {
+mklive_usage () {
     printf "${1} usage:\n"
     local prog="`basename ${1}`"
-    printf '  %s %s\n' "${prog}" 'mkpart  [<dev>]'
-    printf '  %s %s\n' "${prog}" 'mkfs    [<dev>]'
-    printf '  %s %s\n' "${prog}" 'label   [<partition>]'
-    printf '  %s %s\n' "${prog}" 'create  <sysroot> [<dir>]'
-    printf '  %s %s\n' "${prog}" 'install [<dev>] [<dir>] [<mountpoint>]'
+    printf '  %s %s\n' "${prog}" 'new     <dev>'
+    printf '  %s %s\n' "${prog}" 'mount   <image> <root>'
+    printf '  %s %s\n' "${prog}" 'label   <partition>'
+    printf '  %s %s\n' "${prog}" 'create  <root> <dir>'
+    printf '  %s %s\n' "${prog}" 'install <dev> [<dir>] [<mountpoint>]'
     printf '  %s %s\n' "${prog}" 'update  <sysroot>'
 }
 
 # execute script command
-function mklive_command {
+mklive_command () {
     case "${1}" in
+        mount)   mklive_mount "${2}" "${3}";;
+        update)  mklive_update "${2}";;
+        new)     mklive_part "${2}" && mkfs.vfat -n LIVE "${2}";;
         create)  shift; mklive_create  "${@}";;
         label)   shift; mklive_mlabel  "${@}";;
-        new)     shift; mklive_part    "${BASH_ARGV}" && mkfs.vfat -n LIVE "${@}";;
         install) shift; mklive_install "${@}";;
         '') mklive_usage "${0}";;
         *)  mklive_usage "${0}"; return 1;;
