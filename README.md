@@ -11,11 +11,11 @@ Call script without arguments to show available entrypoint options.
 ### Image Creation
 The `create` operation takes a system root directory and an
 arbitrary output directory to write a squashfs image (`filesystem.squashfs`),
-additional package and copy current kernel (`vmlinu*`) and initrd (`initrd.*`) to.
+additional package info and copy current kernel (`vmlinuz`) and initrd (`initrd.img`) to.
 
-The `/boot` directory is exclude from squashfs image to save space.
+The `/boot/grub` directory and initrd images are exclude from squashfs image to save space.
 
-Cleanup functions are designed for Debian/Ubuntu type systems.
+Cleanup and package functions are designed for Debian/Ubuntu type systems.
 
 Required packages:
 - `squashfs-tools`: creating compressed image file
@@ -31,7 +31,7 @@ Try to hide live system directory via FAT file system flags.
 Example configuration and creation/install instructions for
 boot loader can be found in `grub.cfg`.
 
-A minimal module set (working on my system!) for `grub2` is listed in `grub_minimal.txt`.
+A minimal module set (working for my system!) for `grub2` is listed in `grub_minimal.txt`.
 
 
 ## Casper Configuration
@@ -39,6 +39,9 @@ To add data to Live System Ramdisk the script `27livedata` searches
 for archives and extracts them to a location according to their name.
 This script should be copied to `/usr/share/initramfs-tools/scripts/casper-bottom`
 of live system base.
+
+It additionally creates a direectory `/remote` and adds live user to `fuse`
+group for later use of `sshfs`.
 
 When using a regular data Stick to store a live system it is useful
 to wave write access to the single live media partition.
