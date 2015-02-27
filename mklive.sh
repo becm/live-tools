@@ -186,4 +186,5 @@ mklive_command () {
     return $?
 }
 
-[ -n "$PS1" ] || mklive_command $*
+# run command selector when called
+[ -n "$-" ] || mklive_command $*
