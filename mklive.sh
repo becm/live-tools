@@ -15,7 +15,7 @@ mklive_mount () {
 
 # exclude packages in desktop install
 mklive_filter_packages () {
-    grep -e{casper,cryptsetup,debian-installer,discover,dmraid,icu,rdate,reiser,ubiquity,user-setup} -v "${1}"
+    grep -Ev 'casper|cryptsetup|debian-installer|discover|dmraid|icu|rdate|reiser|ubiquity|user-setup' "${1}"
 }
 
 # update root filesystem
@@ -37,7 +37,10 @@ mklive_clean_apt () {
 "${1}"/var/cache/apt/srcpkgcache.bin \
 "${1}"/var/cache/apt/archives/partial/* \
 "${1}"/var/lib/aptitude/pkgstates.old \
-"${1}"/var/lib/apt/lists/*_{Sources,Packages,Translation-de,Translation-en} \
+"${1}"/var/lib/apt/lists/*_Sources \
+"${1}"/var/lib/apt/lists/*_Packages \
+"${1}"/var/lib/apt/lists/*_Translation-de \
+"${1}"/var/lib/apt/lists/*_Translation-en \
 "${1}"/var/lib/apt/lists/partial/*
 }
 # remove history
