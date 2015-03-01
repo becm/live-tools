@@ -106,7 +106,7 @@ EOF
 }
 
 # set FAT file attributes
-mklive_mlabel () {
+mklive_label_fat () {
     local label=`which mlabel`
     [ -n "$label" -a -n "${1}" -a -n "${2}" ] || return 1
     local mfile=/tmp/mtoolsrc.$$
@@ -117,6 +117,14 @@ EOF
     ret=$?
     rm "${mfile}"
     return $ret
+}
+# change file system label
+mklive_label () {
+    case `$asroot blkid -o value -s TYPE "$1"` in
+        vfat) mklive_label_fat "${1}" "${2}";;
+        ntfs) ntfslabel "${1}" "${2}";;
+        *)  error 'unsupported file system'; return 1;;
+    esac
 }
 
 # install grub on device
@@ -181,7 +189,7 @@ mklive_command () {
         update)  mklive_update "${2}";;
         new)     mklive_part "${2}" && mkfs.vfat -n LIVE "${2}";;
         create)  shift; mklive_create  "${@}";;
-        label)   shift; mklive_mlabel  "${@}";;
+        label)   shift; mklive_label   "${@}";;
         install) shift; mklive_install "${@}";;
         '') mklive_usage "${0}";;
         *)  mklive_usage "${0}"; return 1;;

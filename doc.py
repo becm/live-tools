@@ -16,7 +16,7 @@ def paths(env="DOC_LOAD"):
     return ["/opt/doc/conf.d/*.conf"]
 
 def add(conf, match=paths()):
-  """ add matching to configuration """
+  """ add matching entries to configuration """
   import glob
   for fn in glob.glob(match):
     conf.read(fn)
@@ -52,7 +52,7 @@ if __name__ == "__main__":
       try:
         fn = conf.get(str.lower(arg), "file")
         import subprocess
-        subprocess.Popen(["kde-open", os.path.expandvars(fn)])
+        subprocess.Popen(["xdg-open", os.path.expandvars(fn)])
       except:
         sys.stderr.write(sys.argv[0] + ": documentation for '" + arg + "' not found\n")
         sys.exit(1)
