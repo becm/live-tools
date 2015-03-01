@@ -23,9 +23,9 @@ mklive_update () {
     ${asroot} cp -aL /etc/resolv.conf "${1}/etc/resolv.conf"
     ${asroot} mount -t devpts devpts "${1}/dev/pts"
     ${asroot} chroot "${1}" << EOF || return $?
-aptitude update
-aptitude -y safe-upgrade
-aptitude clean
+apt-get update
+apt-get -y safe-upgrade
+apt-get clean
 EOF
     ${asroot} umount "${1}/dev/pts"
 }

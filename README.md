@@ -79,8 +79,8 @@ Required packages:
 ## Documentation Shell Interface
 To access documentation via a command line Interface
 `doc.py` displays availabel elements or opens selected content.
-The environment valiable `DOC_LOAD` must be set to a path style glob pattern
-to match config files to load (e.g. "/doc/*/*.conf:~/.mydoc/*.conf").
+Documentation entries are loaded from files matching `DOC_LOAD`
+environment variable (e.g. `"/doc/*/*.conf:~/.mydoc/*.conf"`).
 
 The config files are in standard [desktop](http://standards.freedesktop.org/desktop-entry-spec/latest/)
 entry format, localization is taken from environmen.
