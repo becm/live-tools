@@ -13,7 +13,7 @@ The `create` operation takes a system root directory and an
 arbitrary output directory to write a squashfs image (`filesystem.squashfs`),
 additional package info to.
 
-The `/boot/grub` directory and initrd images are exclude from squashfs image to save space.
+The `/boot/grub` directory and initrd images are excluded from squashfs image to save space.
 The default kernel (`vmlinuz`) and initrd (`initrd.img`) are
 copied to the output directory.
 
@@ -21,13 +21,13 @@ Cleanup and package functions are designed for Debian/Ubuntu type systems.
 
 Required packages:
 - `squashfs-tools`: creating compressed image file
-- `dpkg`: installed packages listing
+- `dpkg`: listing installed packages
 
 ### Live USB Creation
 Use `install` operation to copy live data to stick and writing prepared
 [GRUB2](https://www.gnu.org/software/grub/) boot code.
 
-Try to hide live system directory via FAT file system flags.
+Try to hide live system directory via FAT file system attributes.
 
 ### Disk Image mounting
 A shortcut to mount the first partition of a disk image at sector 2048
@@ -37,8 +37,8 @@ is provided by the `mount` operation.
 By calling `update` on a directory containing a complete `deb`-based distribution
 the script uses `chroot` to load and apply updates to the system in this directory.
 
-The combination of `mount` and `update` can be used to avoid starting a VM instance
-to apply updates to a system image.
+A combination of `mount` and `update` can be used to avoid starting a VM instance
+to apply updates to a system image but requires root priviledges on host machine.
 
 ### USB repartitioning
 Create a single new partition spanning the whole disk by calling
@@ -83,5 +83,5 @@ Documentation entries are loaded from files matching `DOC_LOAD`
 environment variable (e.g. `"/doc/*/*.conf:~/.mydoc/*.conf"`).
 
 The config files are in standard [desktop](http://standards.freedesktop.org/desktop-entry-spec/latest/)
-entry format, localization is taken from environmen.
+entry format, localization is taken from environment.
 Only simple `CC` locale is supported.

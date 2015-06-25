@@ -1,23 +1,24 @@
-#!/bin/bash
+#!/bin/sh
 # very simple qemu wrapper
 
-unset serial
+# select qemu interface
+unset mode
+[ "${1}" = "-S" ] && { mode='-nographic'; shift; }
 
-if [ "${1}" == "-S" ]; then
-  serial='-nographic'
-  shift
-fi
+# disk image setup
+[ -n "${1}" -a -r "${1}" ] || {
+    printf "%s: %s\n" "${0}" 'need disk image' 1>&2
+    exit 1
+}
+image="file=${1},discard=on,if=virtio"
+shift
 
-# add disk image
-if [ -n "${1}" ]; then \
-    image="file=${1},discard=on,if=virtio"
-    shift
-fi
 # add shared folder
-if [ -n "${1}" ]; then \
+unset share
+[ -n "${1}" ] && {
     share="-fsdev local,id=qshare,path=${1},security_model=none -device virtio-9p-pci,fsdev=qshare,mount_tag=share"
     shift
-fi
+}
 
 # start VM instance
-exec qemu-system-x86_64 -enable-kvm -boot order=c -m 1G -drive "${image}" $share $serial "$@"
+exec qemu-system-x86_64 -enable-kvm -boot order=c -m 1G -drive "${image}" $share $mode "$@"
