@@ -23,8 +23,12 @@ def add(conf, match=paths()):
 
 def config():
   """ create doc configuration """
-  import ConfigParser
-  conf = ConfigParser.ConfigParser()
+  import sys
+  if sys.version_info < (3,0):
+    from ConfigParser import ConfigParser
+  else:
+    from configparser import ConfigParser
+  conf = ConfigParser()
   for pn in paths():
     add(conf, pn)
   return conf
@@ -36,9 +40,9 @@ def display(conf):
   if not lc: lc = locale.getdefaultlocale()[0]
   for alias in sorted(conf.sections()):
     if lc:
-      try: print alias + ":\t" + conf.get(alias, 'info[' + lc[0:2] + ']'); continue
+      try: print(alias + ":\t" + conf.get(alias, 'info[' + lc[0:2] + ']')); continue
       except: pass
-    try: print alias + ":\t" + conf.get(alias, 'info'); continue
+    try: print(alias + ":\t" + conf.get(alias, 'info')); continue
     except: pass
 
 if __name__ == "__main__":
