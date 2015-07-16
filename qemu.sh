@@ -10,13 +10,15 @@ unset mode
     printf "%s: %s\n" "${0}" 'need disk image' 1>&2
     exit 1
 }
-image="file=${1},discard=on,if=virtio"
+image="file=${1},discard=unmap,detect-zeroes=unmap,if=virtio"
 shift
 
 # add shared folder
 unset share
 [ -n "${1}" ] && {
-    share="-fsdev local,id=qshare,path=${1},security_model=none -device virtio-9p-pci,fsdev=qshare,mount_tag=share"
+    [ ! "${1}" = "--" ] && {
+        share="-fsdev local,id=qshare,path=${1},security_model=none -device virtio-9p-pci,fsdev=qshare,mount_tag=share"
+    }
     shift
 }
 
