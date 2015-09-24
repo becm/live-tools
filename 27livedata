@@ -53,6 +53,7 @@ livedata_unpack () {
   for base in "/cdrom/${1}/home" "/cdrom/${1}/home_${sys_arch}"; do
     livedata_unpack_archive "${base}" "/home/${USERNAME}" ${data_ext}
   done
+  chroot /root chown -R "${USERNAME}:${USERNAME}" "/home/${USERNAME}"
   # opt directory
   for base in "/cdrom/${1}/opt" "/cdrom/${1}/opt_${sys_arch}"; do
     livedata_unpack_archive "${base}" '/opt' ${data_ext}
@@ -66,13 +67,6 @@ livedata_unpack () {
 # unpack additional live data
 [ -n "${data_path}" -a "x${data_path}" != "x${live_path}" ] \
   && livedata_unpack "${data_path}"
-
-# add Live-User to FUSE group
-chroot /root /usr/sbin/usermod -a -Gfuse "${USERNAME}"
-# create ssh directory
-mkdir -p /root/remote
-# set home and remote directory ownership
-chroot /root chown -R "${USERNAME}:${USERNAME}" "/home/${USERNAME}" /remote
 
 # clean environment
 unset live_path

@@ -9,9 +9,8 @@ and prepare USB media for live system booting.
 To show available operations call script without arguments.
 
 ### Image Creation
-The `create` operation takes a system root directory and an
-arbitrary output directory to write a squashfs image (`filesystem.squashfs`),
-additional package info to.
+The `create` operation builds a squashfs image (`filesystem.squashfs`)
+and additional package info from a system root directory.
 
 The `/boot/grub` directory and initrd images are excluded from squashfs image to save space.
 The default kernel (`vmlinuz`) and initrd (`initrd.img`) are
@@ -38,7 +37,8 @@ By calling `update` on a directory containing a complete `deb`-based distributio
 the script uses `chroot` to load and apply updates to the system in this directory.
 
 A combination of `mount` and `update` can be used to avoid starting a VM instance
-to apply updates to a system image but requires root priviledges on host machine.
+to apply updates to a system image but both operations require
+root priviledges on host machine.
 
 ### Disk partitioning
 Create a single new partition spanning the whole disk by calling
@@ -50,7 +50,7 @@ A FAT (or NTFS) file system label can be changed by the scripts `label` operatio
 
 ## VM runtime support
 The alias/script file `aliases.sh` may be copied into the live system base VM image
-to supply a shortcut for image creation from within a runing QEMU instance.
+to supply a shortcut for image creation from within a running QEMU instance.
 
 
 ## GRUB configuration
@@ -63,22 +63,23 @@ on `core.img` creation.
 
 
 ## Casper Configuration
-To add data to Live System ram disk the script `27livedata` searches
-for archives and extracts them to a location according to their name.
-This script should be copied to `/usr/share/initramfs-tools/scripts/casper-bottom`
+Scripts for live system modification using `casper` must be
+copied to `/usr/share/initramfs-tools/scripts/casper-bottom`
 in the live system base directory.
-
-It additionally creates a directory `/remote` and
-adds the live user to the `fuse` group.
-
-When using a regular USB flash drive to store a live system it is useful
-to have write access to its single data partition.
-`casper.diff` changes mount options in `/usr/share/initramfs-tools/scripts/casper`
-if live media is a FAT or NTFS partitions.
-Patch must be applied before creating the initial ram disk.
 
 Required packages:
 - `casper`: Ubuntu live image runtime
+
+### Insert additional data
+To add data to the live system ramdisk the script `27livedata` searches
+for archives and extracts them to locations according to their name.
+
+### Change system setup
+The script `27livemod` can change mount flags (`live-rw`)
+and add the live user to the `fuse` group (`live-fuse`).
+The second option also creates the directory `/remote` to be used by
+the live system user for [fuse](https://en.wikipedia.org/wiki/Filesystem_in_Userspace) mounts.
+Both options are enabled in supplied `grub.cfg`.
 
 
 ## Documentation Shell Interface

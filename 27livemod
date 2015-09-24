@@ -1,0 +1,39 @@
+#!/bin/sh
+# live-tools/27livemod: script applied on casper init
+
+PREREQ=''
+
+case $1 in
+# get pre-requisites
+prereqs)
+  echo "$PREREQ"
+  exit 0
+  ;;
+esac
+
+. /scripts/casper-functions
+
+# make live media writable
+livemod_rw () {
+  log_begin_msg 'Make live media writable...'
+  mount -o remount,rw "${1}"
+  log_end_msg
+}
+
+# add Live-User to FUSE group
+livemod_fuse () {
+  log_begin_msg 'Add live user to "fuse" group...'
+  chroot /root /usr/sbin/usermod -a -Gfuse "${USERNAME}"
+  # create and and ssh directory ownership
+  mkdir -p /root/remote
+  chroot /root chown "${USERNAME}:${USERNAME}" /remote
+  log_end_msg
+}
+
+# determine live/data path
+for arg in `cat /proc/cmdline`; do \
+  case "$arg" in
+    live-rw)   livemod_rw '/root/cdrom';;
+    live-fuse) livemod_fuse;;
+  esac
+done
