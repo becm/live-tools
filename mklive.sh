@@ -1,5 +1,5 @@
 #!/bin/sh
-# mklive.sh: update/create live media
+# live-tools/mklive.sh: update/create live media
 
 [ `id -u` -ne 0 ] && asroot="sudo"
 
@@ -123,7 +123,7 @@ mklive_label () {
     case `$asroot blkid -o value -s TYPE "$1"` in
         vfat) mklive_label_fat "${1}" "${2}";;
         ntfs) ntfslabel "${1}" "${2}";;
-        *)  error 'unsupported file system'; return 1;;
+        *) error 'unsupported file system'; return 1;;
     esac
 }
 
@@ -171,6 +171,7 @@ mklive_install () {
     printf '%s\n' 'finished'
 }
 
+# print available script operations
 mklive_usage () {
     printf "${1} usage:\n"
     local prog="`basename ${1}`"
@@ -182,8 +183,8 @@ mklive_usage () {
     printf '  %s %s\n' "${prog}" 'update  <sysroot>'
 }
 
-# execute script command
-mklive_command () {
+# script command selection when called
+[ -n "$-" ] || {
     case "${1}" in
         mount)   mklive_mount "${2}" "${3}";;
         update)  mklive_update "${2}";;
@@ -196,6 +197,3 @@ mklive_command () {
     esac
     return $?
 }
-
-# run command selector when called
-[ -n "$-" ] || mklive_command $*

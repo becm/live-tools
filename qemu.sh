@@ -1,5 +1,5 @@
 #!/bin/sh
-# very simple qemu wrapper
+# live-tools/qemu.sh: very simple qemu wrapper
 
 # select qemu interface
 unset mode

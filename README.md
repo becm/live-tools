@@ -30,7 +30,7 @@ Use `install` operation to copy live data to stick and writing prepared
 Try to hide live system directory via FAT file system attributes.
 
 ### Disk Image mounting
-A shortcut to mount the first partition of a disk image at sector 2048
+A shortcut to mount the first partition of a disk image at sector 2048 (or 512 on 4k)
 is provided by the `mount` operation.
 
 ### Live Data directory update
@@ -40,12 +40,17 @@ the script uses `chroot` to load and apply updates to the system in this directo
 A combination of `mount` and `update` can be used to avoid starting a VM instance
 to apply updates to a system image but requires root priviledges on host machine.
 
-### USB repartitioning
+### Disk partitioning
 Create a single new partition spanning the whole disk by calling
 `new` on a USB flash device (WARNING: check for correct target device!)
 
-### Partition relabel
-A disk label can be changed by the scripts `label` operation.
+### File system relabel
+A FAT (or NTFS) file system label can be changed by the scripts `label` operation.
+
+
+## VM runtime support
+The alias/script file `aliases.sh` may be copied into the live system base VM image
+to supply a shortcut for image creation from within a runing QEMU instance.
 
 
 ## GRUB configuration

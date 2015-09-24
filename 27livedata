@@ -1,4 +1,5 @@
 #!/bin/sh
+# live-tools/27livedata: script applied on casper init
 
 PREREQ=''
 DESCRIPTION='Applying live data extensions...'
