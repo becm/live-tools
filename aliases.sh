@@ -14,7 +14,7 @@ mklive () {
   [ -n "${root}" ] || return 1
   
   mkdir -p "${root}" && \
-  mount -t 9p share "${dest}" && \
+  mount -t 9p -o trans=virtio share "${dest}" && \
   mount /dev/vda1 "${root}" && \
   "${dest}"/mklive.sh create "${root}" "${dest}"
   
