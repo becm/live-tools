@@ -69,7 +69,7 @@ mklive_create () {
 # calculate unpacked size
     printf $(${asroot} du -sx --block-size=1 "${root}" | cut -f1) > "${dest}/filesystem.size" || return $?
 # update kernel and initrd
-    ${asroot} cp -aL "${root}/vmlinuz" "${root}/initrd.img" "${dest}"
+    ${asroot} cp -L --preserve=mode,timestamps "${root}/vmlinuz" "${root}/initrd.img" "${dest}"
 # build squash filesystem
     ${asroot} mksquashfs "${root}" "${dest}/filesystem.squashfs" \
         -comp xz -noappend -wildcards \
