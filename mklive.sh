@@ -71,7 +71,11 @@ mklive_create () {
 # update kernel and initrd
     ${asroot} cp -aL "${root}/vmlinuz" "${root}/initrd.img" "${dest}"
 # build squash filesystem
-    ${asroot} mksquashfs "${root}" "${dest}/filesystem.squashfs" -comp xz -noappend -regex -e 'boot/grub' -e 'boot/initrd.*' -e 'initrd.img' || return $?
+    ${asroot} mksquashfs "${root}" "${dest}/filesystem.squashfs" \
+        -comp xz -noappend -wildcards \
+        -e 'boot/grub' -e 'boot/initrd.*' -e 'initrd.img' \
+        -e 'tmp/*' -e 'var/tmp/*' \
+        || return $?
     ${asroot} chmod 644 "${dest}/filesystem.squashfs"
 }
 
