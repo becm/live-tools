@@ -106,12 +106,22 @@ mklive_label () {
     ${asroot} "${label}" "${@}"
 }
 
-# install grub on device
+# install grub to device
 mklive_grub () {
-    [ -z "${1}" ] && error "missing system directory" && return 1
-    [ -z "${2}" ] && error "missing target device" && return 1
-    ${asroot} dd "if=${2}/grub/boot.img" "of=${1}" bs=446 count=1 && \
-    ${asroot} dd "if=${2}/grub/core.img" "of=${1}" bs=512 seek=1
+    local sys='boot/grub'
+    [ -z "${1}" ] && error "missing target device" && return 1
+    [ -n "${2}" ] && sys="${2}"
+# temporary file names
+    local early=`mktemp /tmp/grub-core_XXXXXX.cfg`
+    local core=`mktemp /tmp/grub-core_XXXXXX.img`
+# create grub core file config
+    printf '%s\n%s\n' 'set root=hd0,msdos1' "set prefix=($root)/${sys}" > "${early}" && \
+# create grub core image file
+    grub-mkimage -O i386-pc -c "${early}" -o "${core}" biosdisk part_msdos `blkid -o value -s TYPE "${1}1"` && \
+# write grub boot code files
+    ${asroot} dd if="/usr/lib/grub/i386-pc/boot.img" of="${1}" bs=440 count=1 && \
+    ${asroot} dd if="${core}" of="${1}" bs=512 seek=1
+    rm "${early}" "${core}"
 }
 
 # copy live files
@@ -150,9 +160,9 @@ mklive_install () {
             printf '%s\n' 'failed'
         fi
     fi
-# boot sector
-    printf '%s' 'write boot sector... '
-    mklive_grub "${1}"
+# use grub2 as boot loader
+    printf '%s' 'write boot code... '
+    mklive_grub "${1}" "${sysdir}/grub"
     ${asroot} umount "${mpoint}"
     printf '%s\n' 'finished'
 }
