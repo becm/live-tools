@@ -95,41 +95,15 @@ w
 EOF
 }
 
-# set FAT file attributes
-mklive_mattrib () {
-    local chattr=`which mattrib`
-    [ -n "$chattr" -a -n "${1}" ] || return 1
-    local mfile="`mktemp mattrib_XXXXXX`"
-    cat > "${mfile}" << EOF || return $?
-drive z: file="${1}"
-mtools_skip_check=1
-EOF
-    MTOOLSRC="${mfile}" ${asroot} "${chattr}" +h +s "z:\\${2}"
-    ret=$?
-    rm "${mfile}"
-    return $ret
-}
-
-# set FAT file attributes
-mklive_label_fat () {
-    local label=`which mlabel`
-    [ -n "$label" -a -n "${1}" -a -n "${2}" ] || return 1
-    local mfile=/tmp/mtoolsrc.$$
-    cat > "${mfile}" << EOF || return $?
-drive z: file="${1}"
-EOF
-    MTOOLSRC=${mfile} ${asroot} ${label} z:"${2}"
-    ret=$?
-    rm "${mfile}"
-    return $ret
-}
 # change file system label
 mklive_label () {
     case `$asroot blkid -o value -s TYPE "$1"` in
-        vfat) mklive_label_fat "${1}" "${2}";;
-        ntfs) ntfslabel "${1}" "${2}";;
+        vfat)  local label=fatlabel;;
+        exfat) local label=exfatlabel;;
+        ntfs)  local label=ntfslabel;;
         *) error 'unsupported file system'; return 1;;
     esac
+    ${asroot} "${label}" "${@}"
 }
 
 # install grub on device
@@ -162,13 +136,20 @@ mklive_install () {
     [ -n "${2}" ] && source="${2}"
     [ -n "${3}" ] && mpoint="${3}"
     [ -n "${4}" ] && sysdir="${4}"
-# ptable and filesystem
+# copy live files
     ${asroot} mount "${1}1" "${mpoint}" || return $?
-# live files
     mkdir -p "/${mpoint}/${sysdir}" || return $?
-    printf '%s' 'hide system directory... '
-    mklive_mattrib "${sysdir}" "${1}1"
     mklive_copy "${source}" "/${mpoint}/${sysdir}" || return $?
+# set target directory filesystem flags
+    local attr="`which fatattr`"
+    if [ -n "$attr" ]; then \
+        printf '%s' 'hide system directory... '
+        if "$attr" +hs "/${mpoint}/${sysdir}"; then
+            printf '%s\n' 'done'
+        else
+            printf '%s\n' 'failed'
+        fi
+    fi
 # boot sector
     printf '%s' 'write boot sector... '
     mklive_grub "${1}"
