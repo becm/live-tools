@@ -33,24 +33,24 @@ EOF
 # remove apt cache
 mklive_clean_apt () {
     ${asroot} rm -f \
-"${1}"/var/cache/apt/pkgcache.bin \
-"${1}"/var/cache/apt/srcpkgcache.bin \
-"${1}"/var/cache/apt/archives/partial/* \
-"${1}"/var/lib/aptitude/pkgstates.old \
-"${1}"/var/lib/apt/lists/*_Sources \
-"${1}"/var/lib/apt/lists/*_Packages \
-"${1}"/var/lib/apt/lists/*_Translation-de \
-"${1}"/var/lib/apt/lists/*_Translation-en \
-"${1}"/var/lib/apt/lists/partial/*
+"${1}/var/cache/apt/pkgcache.bin" \
+"${1}/var/cache/apt/srcpkgcache.bin" \
+"${1}/var/cache/apt/archives/partial/"* \
+"${1}/var/lib/aptitude/pkgstates.old" \
+"${1}/var/lib/apt/lists/"*_Sources \
+"${1}/var/lib/apt/lists/"*_Packages \
+"${1}/var/lib/apt/lists/"*_Translation-de \
+"${1}/var/lib/apt/lists/"*_Translation-en \
+"${1}/var/lib/apt/lists/partial/"*
 }
 # remove history
 mklive_clean_hist () {
     ${asroot} rm -f \
-"${1}"/var/cache/debconf/*.dat-old \
-"${1}"/var/lib/dpkg/*-old \
-"${1}"/var/backups/*.gz \
-"${1}"/var/log/*.gz \
-"${1}"/var/log/upstart/*.gz
+"${1}/var/cache/debconf/"*.dat-old \
+"${1}/var/lib/dpkg/"*-old \
+"${1}/var/backups/"*.gz \
+"${1}/var/log/"*.gz \
+"${1}/var/log/upstart/"*.gz
 }
 
 # create live files
@@ -65,7 +65,7 @@ mklive_create () {
 # clear some files
     mklive_clean_apt "${root}"
     mklive_clean_hist "${root}"
-    ${asroot} rm -f "${root}/etc/udev/rules.d/*persistent*.rules"
+    ${asroot} rm -f "${root}/etc/udev/rules.d/"*persistent*.rules
 # calculate unpacked size
     printf $(${asroot} du -sx --block-size=1 "${root}" | cut -f1) > "${dest}/filesystem.size" || return $?
 # update kernel and initrd
@@ -73,7 +73,8 @@ mklive_create () {
 # build squash filesystem
     ${asroot} mksquashfs "${root}" "${dest}/filesystem.squashfs" \
         -comp xz -noappend -wildcards \
-        -e 'boot/grub' -e 'boot/initrd.*' -e 'initrd.img' \
+        -e 'boot/grub' -e 'boot/initrd.*' \
+        -e 'initrd.img' \
         -e 'tmp/*' -e 'var/tmp/*' \
         || return $?
     ${asroot} chmod 644 "${dest}/filesystem.squashfs"
