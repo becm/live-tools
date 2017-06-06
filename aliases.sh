@@ -21,12 +21,3 @@ mklive () {
   umount "${root}" "${dest}"
   rmdir "${root}"
 }
-
-# script command selection when called
-[ -n "$-" ] || {
-    case "${1}" in
-        mklive) shift; mklive "${@}";;
-        '') printf '%s: %s\n' "${0}" 'need operation argument' 1>&2; return 1;;
-        *)  printf '%s: %s\n' "${0}" 'bad operation argument'  1>&2; return 1;;
-    esac
-}
