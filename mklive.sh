@@ -115,7 +115,7 @@ mklive_grub () {
     local early=`mktemp /tmp/grub-core_XXXXXX.cfg`
     local core=`mktemp /tmp/grub-core_XXXXXX.img`
 # create grub core file config
-    printf '%s\n%s\n' 'set root=hd0,msdos1' "set prefix=($root)/${sys}" > "${early}" && \
+    printf '%s\n%s\n' 'set root=hd0,msdos1' "set prefix=(\$root)/${sys}" > "${early}" && \
 # create grub core image file
     grub-mkimage -O i386-pc -c "${early}" -o "${core}" biosdisk part_msdos `blkid -o value -s TYPE "${1}1"` && \
 # write grub boot code files
