@@ -1,14 +1,14 @@
-# Live System helpers
+# LiveSystem helpers
 
-Scripts and configs to allow creation and use of live system.
+Scripts and configs to allow creation and use of non-persistent Ubuntu system.
 
-## Creation Script
+## Creation script
 Shell functions in `mklive.sh` are used to create a squashfs image
 and prepare USB media for live system booting.
 
 To show available operations call script without arguments.
 
-### Image Creation
+### Image creation
 The `create` operation builds a squashfs image (`filesystem.squashfs`)
 and additional package info from a system root directory.
 
@@ -22,17 +22,33 @@ Required packages:
 - `squashfs-tools`: creating compressed image file
 - `dpkg`: listing installed packages
 
-### Live USB Creation
-Use `install` operation to copy live data to stick and writing prepared
-[GRUB2](https://www.gnu.org/software/grub/) boot code.
+### Disk partitioning
+Create a single new partition spanning the whole disk by calling
+`new` on a USB flash device (WARNING: check for correct target device!)
+
+### Boot code creation
+Matching [GRUB2](https://www.gnu.org/software/grub/) boot code is written
+to a target device with the `grub` option. Examples for grub configuratiuons
+can be found in `grub.cfg`.
+
+A minimal module set (working for my `grub2` version!) is listed in `grub_minimal.txt`.
+The listed files must be present in the GRUB module folder on the live media device.
+
+    #!/bin/sh
+    for m in `cat grub_minimal.txt`; do \
+        cp -a "${grub_base}/$m" "${live_grub_moduledir}"
+    done
+
+### Live USB creation
+Use `install` operation to copy live data to stick and creating boot code.
 
 Try to hide live system directory via FAT file system attributes.
 
-### Disk Image mounting
+### Disk image mounting
 A shortcut to mount the first partition of a disk image at sector 2048 (or 512 on 4k)
 is provided by the `mount` operation.
 
-### Live Data directory update
+### Live system update
 By calling `update` on a directory containing a complete `deb`-based distribution
 the script uses `chroot` to load and apply updates to the system in this directory.
 
@@ -40,26 +56,15 @@ A combination of `mount` and `update` can be used to avoid starting a VM instanc
 to apply updates to a system image but both operations require
 root priviledges on host machine.
 
-### Disk partitioning
-Create a single new partition spanning the whole disk by calling
-`new` on a USB flash device (WARNING: check for correct target device!)
-
 ### File system relabel
-A FAT (or NTFS) file system label can be changed by the scripts `label` operation.
+A file system label can be changed by the scripts `label` operation.
+Detection and call for FAT, ExFAT and NTFS label commands is implemented.
+Required program to change label must be installed.
 
 
 ## VM runtime support
 The alias/script file `aliases.sh` may be copied into the live system base VM image
 to supply a shortcut for image creation from within a running QEMU instance.
-
-
-## GRUB configuration
-Example configuration and creation/install instructions for
-boot loader can be found in `grub.cfg`.
-
-A minimal module set (working for my `grub2` version!) is listed in `grub_minimal.txt`.
-These files must be present on live media in the directory supplied
-on `core.img` creation.
 
 
 ## Casper Configuration
