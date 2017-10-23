@@ -6,13 +6,16 @@ image="discard=unmap,detect-zeroes=unmap,if=virtio"
 unset args
 
 # process argument flags
-while getopts 'SRs:' opt; do
+while getopts 'SRAs:' opt; do
     case $opt in
       # select qemu interface
       S) args="${args} -nographic"
          ;;
       # select image format
       R) image="format=raw,${image}"
+         ;;
+      # pass two cores from host CPU
+      A) args="${args} -cpu host -smp 2"
          ;;
       # add shared folder
       s) args="${args} -fsdev local,security_model=none,id=qshare,path=${OPTARG}"

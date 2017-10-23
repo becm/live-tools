@@ -40,7 +40,7 @@ The listed files must be present in the GRUB module folder on the live media dev
     done
 
 ### Live USB creation
-Use `install` operation to copy live data to stick and creating boot code.
+Use `install` operation to copy live data to stick and create and write boot code.
 
 Try to hide live system directory via FAT file system attributes.
 
